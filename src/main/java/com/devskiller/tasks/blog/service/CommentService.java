@@ -1,8 +1,9 @@
 package com.devskiller.tasks.blog.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,6 @@ import com.devskiller.tasks.blog.model.Comment;
 import com.devskiller.tasks.blog.model.Post;
 import com.devskiller.tasks.blog.model.dto.CommentDto;
 import com.devskiller.tasks.blog.model.dto.NewCommentDto;
-import com.devskiller.tasks.blog.model.dto.PostDto;
 import com.devskiller.tasks.blog.repository.CommentRepository;
 import com.devskiller.tasks.blog.repository.PostRepository;
 
@@ -34,10 +34,15 @@ public class CommentService {
 	 * @return list of comments sorted by creation date descending - most recent first
 	 */
 	public List<CommentDto> getCommentsForPost(Long postId) {
-		return commentRepository.findCommentsByPostId(postId)
-				.stream()
-				.map(comment -> new CommentDto(comment.getContent(), comment.getAuthor(), comment.getCreationDate()))
-				.collect(Collectors.toList());
+		List<Comment> comments =  commentRepository.findCommentsByPostId(postId);
+		comments.sort(Comparator.comparing(Comment::getCreationDate).reversed());
+		List<CommentDto> result = new ArrayList<>();		
+		
+		comments.forEach(comment -> {
+			result.add(new CommentDto(comment.getContent(), comment.getAuthor(), comment.getCreationDate()));
+		});
+		
+		return result;
 	}
 
 	/**
